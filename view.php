@@ -1,13 +1,17 @@
 <?php
 include 'config.php';
 
+
 $stmt = $pdo->query("
-    SELECT p.*, c.name as category_name
+    SELECT p.*, c.name as category_name 
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     ORDER BY p.created_at DESC
 ");
 $products = $stmt->fetchAll();
+
+$productCount = count($products);
+
 ?>
 
 <html>
@@ -23,11 +27,11 @@ $products = $stmt->fetchAll();
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">All Products</h4>
+                            <h4 class="mb-0">All Products <span class="badge bg-light text-dark ms-2"><?php echo count($products); ?></span></h4>
                             <a href="add.php" class="btn btn-light btn-sm">Add New Product</a>
                         </div>
                         <div class="card-body">
-                            <?php if (count($products) > 0): ?>
+                            <?php if (count($products) > 0): ?> // Line no 33. Jika ada data product, maka keluarkan data product.
                                 <div class="table-responsive">
                                     <table class="table table-striped">
                                         <thead>
@@ -45,13 +49,31 @@ $products = $stmt->fetchAll();
                                             <?php foreach ($products as $product): ?>
                                                 <tr>
                                                     <td><?php echo $product['id']; ?></td>
-                                                    <td><?php echo $product['name']; ?></td>
+                                                    <td><?php echo strtoupper(string: $product['name']); ?></td>
                                                     <td>RM<?php echo number_format($product['price'], 2); ?></td>
                                                     <td>
-                                                        <span class="badge bg-info"><?php echo $product['category_name']; ?></span>
+                                                        <span class="badge bg-info"><?php echo strtoupper($product['category_name']); ?></span>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-<?php echo $product['stock'] > 0 ? 'success' : 'danger'; ?>">
+                                                        <?php
+                                                        $stock = $product['stock'];
+                                                        $badgeClass = '';
+                                                        switch (true) {
+                                                            case $stock == 0:
+                                                                $badgeClass = 'danger';
+                                                                break;
+                                                            case $stock <= 5:
+                                                                $badgeClass = 'warning';
+                                                                break;
+                                                            case $stock <= 20:
+                                                                $badgeClass = 'info';
+                                                                break;
+                                                            default:
+                                                                $badgeClass = 'success';
+                                                                break;
+                                                        }
+                                                        ?>
+                                                        <span class="badge bg-<?php echo $badgeClass; ?>">
                                                             <?php echo $product['stock']; ?>
                                                         </span>
                                                     </td>

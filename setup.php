@@ -10,7 +10,7 @@ function createDatabase() {
         $pdo = new PDO("mysql:host=$host", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $pdo->exec("CREATE DATABASE IF NOT EXISTS $database");
+        $pdo->exec(statement: "CREATE DATABASE IF NOT EXISTS $database");
         $pdo->exec("USE $database");
 
         return $pdo;
