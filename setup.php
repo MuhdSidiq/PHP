@@ -1,13 +1,13 @@
 <?php
 
 function createDatabase() {
-    $host = "localhost";
+    $host = "127.0.0.1";
     $username = "root";
     $password = "";
     $database = "php_demo";
 
     try {
-        $pdo = new PDO("mysql:host=$host", $username, $password);
+        $pdo = new PDO("mysql:host=$host;port=3306", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $pdo->exec(statement: "CREATE DATABASE IF NOT EXISTS $database");
@@ -35,6 +35,7 @@ function createTables($pdo) {
             price DECIMAL(10,2) NOT NULL,
             category_id INT,
             stock INT DEFAULT 0,
+            image VARCHAR(100), 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
         );
@@ -47,6 +48,15 @@ function createTables($pdo) {
             customer_email VARCHAR(100) NOT NULL,
             order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            email VARCHAR(100) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         );
         ";
 
@@ -108,6 +118,18 @@ function populateData($pdo) {
         $stmt = $pdo->prepare("INSERT INTO orders (product_id, quantity, customer_name, customer_email) VALUES (?, ?, ?, ?)");
         foreach ($orders as $order) {
             $stmt->execute($order);
+        }
+
+        // Add sample users
+        $users = [
+            ['admin', 'admin@example.com', password_hash('admin123', PASSWORD_DEFAULT)],
+            ['testuser', 'test@example.com', password_hash('test123', PASSWORD_DEFAULT)],
+            ['demo', 'demo@example.com', password_hash('demo123', PASSWORD_DEFAULT)]
+        ];
+
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+        foreach ($users as $user) {
+            $stmt->execute($user);
         }
 
         return "Sample data inserted successfully!";

@@ -10,7 +10,9 @@ $stmt = $pdo->query("
 ");
 $products = $stmt->fetchAll();
 
-$productCount = count($products);
+$productCount = count(value: $products);
+
+$AgentPrice = 1.2;
 
 ?>
 
@@ -39,6 +41,7 @@ $productCount = count($products);
                                                 <th>ID</th>
                                                 <th>Product Name</th>
                                                 <th>Price</th>
+                                                <th>Agent Price</th>
                                                 <th>Category</th>
                                                 <th>Stock</th>
                                                 <th>Created</th>
@@ -51,6 +54,7 @@ $productCount = count($products);
                                                     <td><?php echo $product['id']; ?></td>
                                                     <td><?php echo strtoupper(string: $product['name']); ?></td>
                                                     <td>RM<?php echo number_format($product['price'], 2); ?></td>
+                                                    <td>RM<?php echo number_format($product['price'] * $AgentPrice, 2); ?></td>
                                                     <td>
                                                         <span class="badge bg-info"><?php echo strtoupper($product['category_name']); ?></span>
                                                     </td>

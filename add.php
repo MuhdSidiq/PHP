@@ -53,7 +53,9 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                                     <select name="category_id" class="form-control" required>
                                         <option value="">Select Category</option>
                                         <?php foreach ($categories as $category): ?>
-                                            <option value="<?php echo $category['id']; ?>"><?php echo $category['name']; ?></option>
+                                            <option value="<?php echo $category['id']; ?>">
+                                                <?php echo $category['name']; ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

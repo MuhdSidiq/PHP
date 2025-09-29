@@ -18,8 +18,8 @@ if ($_POST) {
         $error = "Email is required";
     } elseif (empty($password)) {
         $error = "Password is required";
-    } elseif (strlen($password) < 6) {
-        $error = "Password must be at least 6 characters";
+    } elseif (strlen($password) < 5) {
+        $error = "Password must be at least 5 characters";
     } elseif ($password !== $confirmPassword) {
         $error = "Passwords do not match";
     } else {
