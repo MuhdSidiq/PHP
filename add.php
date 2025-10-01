@@ -2,7 +2,34 @@
 
 include 'config.php';
 
+session_start();
+
+// Determine if current user is staff
+$currentUser = null;
+$isStaff = false;
+if (isset($_SESSION['user_id'])) {
+    $userStmt = $pdo->prepare("SELECT u.role_id, r.name AS role_name FROM users u LEFT JOIN roles r ON r.id = u.role_id WHERE u.id = ?");
+    $userStmt->execute([$_SESSION['user_id']]);
+    $currentUser = $userStmt->fetch();
+    if ($currentUser) {
+        $roleName = strtolower((string)($currentUser['role_name'] ?? ''));
+        $isStaff = ($roleName === 'staff');
+    }
+}
+
+// Enforce immediate 403 for staff on any access
+if ($isStaff) {
+    http_response_code(403);
+    echo 'Forbidden: You are not allowed to access this page.';
+    exit;
+}
+
 if ($_POST) {
+    if ($isStaff) {
+        http_response_code(403);
+        echo 'Forbidden: You are not allowed to add products.';
+        exit;
+    }
     $name = $_POST['name'];
     $price = $_POST['price'];
     $category_id = $_POST['category_id'];

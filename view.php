@@ -1,6 +1,39 @@
 <?php
 include 'config.php';
 
+session_start();
+
+$currentUser = null;
+$canDelete = false;
+
+
+if (isset($_SESSION['user_id'])) {
+    $userStmt = $pdo->prepare(query: "SELECT u.username, u.email, u.role_id, r.name AS role_name FROM users u LEFT JOIN roles r ON r.id = u.role_id WHERE u.id = ?");
+    $userStmt->execute([$_SESSION['user_id']]);
+    $currentUser = $userStmt->fetch();
+
+    if ($currentUser) {
+        $roleName = ($currentUser['role_name'] ?? '');
+        $isStaff = ($roleName === 'staff');
+        $canDelete = !($isStaff || (($currentUser['role_id'] ?? 0) === 2));
+    }
+}
+
+echo '<pre>';
+print_r($currentUser);
+echo '<br>Session ID: ' . session_id();
+echo '</pre>';
+echo '<pre>';
+print_r($_SESSION);
+echo '<br>Session ID: ' . session_id();
+echo '</pre>';
+echo '<pre>';
+print_r(session_status());
+echo '</pre>';
+
+
+
+
 
 $stmt = $pdo->query("
     SELECT p.*, c.name as category_name 
@@ -40,8 +73,10 @@ $AgentPrice = 1.2;
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Product Name</th>
-                                                <th>Price</th>
-                                                <th>Agent Price</th>
+                                                <?php if (empty($isStaff) || !$isStaff): ?>
+                                                    <th>SupplierPrice</th>
+                                                <?php endif; ?>
+                                                <th> Agent or Selling Price</th>
                                                 <th>Category</th>
                                                 <th>Stock</th>
                                                 <th>Created</th>
@@ -53,7 +88,9 @@ $AgentPrice = 1.2;
                                                 <tr>
                                                     <td><?php echo $product['id']; ?></td>
                                                     <td><?php echo strtoupper(string: $product['name']); ?></td>
-                                                    <td>RM<?php echo number_format($product['price'], 2); ?></td>
+                                                    <?php if (empty($isStaff) || !$isStaff): ?>
+                                                        <td>RM<?php echo number_format($product['price'], 2); ?></td>
+                                                    <?php endif; ?>
                                                     <td>RM<?php echo number_format($product['price'] * $AgentPrice, 2); ?></td>
                                                     <td>
                                                         <span class="badge bg-info"><?php echo strtoupper($product['category_name']); ?></span>
@@ -84,9 +121,11 @@ $AgentPrice = 1.2;
                                                     <td><?php echo date('d/m/Y', strtotime($product['created_at'])); ?></td>
                                                     <td>
                                                         <a href="edit.php?id=<?php echo $product['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
-                                                        <a href="delete.php?id=<?php echo $product['id']; ?>"
-                                                           class="btn btn-danger btn-sm"
-                                                           onclick="return confirm('Are you sure?')">Delete</a>
+                                                        <?php if ($canDelete): ?>
+                                                            <a href="delete.php?id=<?php echo $product['id']; ?>"
+                                                               class="btn btn-danger btn-sm"
+                                                               onclick="return confirm('Are you sure?')">Delete</a>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

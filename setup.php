@@ -22,6 +22,11 @@ function createDatabase() {
 function createTables($pdo) {
     try {
         $sql = "
+        CREATE TABLE IF NOT EXISTS roles (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(50) NOT NULL UNIQUE
+        );
+
         CREATE TABLE IF NOT EXISTS categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
@@ -55,8 +60,10 @@ function createTables($pdo) {
             username VARCHAR(50) NOT NULL UNIQUE,
             email VARCHAR(100) NOT NULL UNIQUE,
             password_hash VARCHAR(255) NOT NULL,
+            role_id INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
         );
         ";
 
@@ -127,10 +134,29 @@ function populateData($pdo) {
             ['demo', 'demo@example.com', password_hash('demo123', PASSWORD_DEFAULT)]
         ];
 
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
-        foreach ($users as $user) {
-            $stmt->execute($user);
+        // Seed roles and map sample users to roles
+        $roles = [
+            ['Admin'],
+            ['User']
+        ];
+
+        $stmt = $pdo->prepare("INSERT INTO roles (name) VALUES (?)");
+        foreach ($roles as $role) {
+            $stmt->execute($role);
         }
+
+        // Fetch role ids
+        $roleStmt = $pdo->prepare("SELECT id FROM roles WHERE name = ?");
+        $roleStmt->execute(['Admin']);
+        $adminRoleId = (int)$roleStmt->fetchColumn();
+        $roleStmt->execute(['User']);
+        $userRoleId = (int)$roleStmt->fetchColumn();
+
+        // Insert users with role_id
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role_id) VALUES (?, ?, ?, ?)");
+        $stmt->execute(['admin', 'admin@example.com', password_hash('admin123', PASSWORD_DEFAULT), $adminRoleId]);
+        $stmt->execute(['testuser', 'test@example.com', password_hash('test123', PASSWORD_DEFAULT), $userRoleId]);
+        $stmt->execute(['demo', 'demo@example.com', password_hash('demo123', PASSWORD_DEFAULT), $userRoleId]);
 
         return "Sample data inserted successfully!";
     } catch(PDOException $e) {
