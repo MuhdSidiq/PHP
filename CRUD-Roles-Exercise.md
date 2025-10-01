@@ -10,6 +10,18 @@ This exercise will guide you through building a complete CRUD (Create, Read, Upd
 - Practice security best practices
 - Build a complete user management system
 
+
+## User Story:
+- CUSTOMER NAK SISTEM PENGURUSAN PRODUK
+- SIAPA PENGGUNA ? ADMIN, STAFF JUAL, STAFF STOCK
+- ADMIN Boleh buat apa ?
+
+
+## MULA DARI MANA ?
+- Database Design - https://drawsql.app/login
+- CRUD BASED PAGE - 
+
+
 ## Database Schema
 
 ### 1. Users Table
@@ -36,7 +48,7 @@ CREATE TABLE roles (
 );
 ```
 
-### 3. Permissions Table
+### 3. Permissions Table (Policies)
 ```sql
 CREATE TABLE permissions (
     id INT PRIMARY KEY AUTO_INCREMENT,
